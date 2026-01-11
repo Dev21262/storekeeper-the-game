@@ -5,20 +5,179 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Storekeeper</title>
     <style>
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background: #121212;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            width: 800px;
+            height: 600px;
+        }
     </style>
 </head>
 <body>
-    <canvas>
+    <canvas id="canvas">
 
     </canvas>
-    <script>
+    <script type="module">
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d")
 
-        ctx.fillStyle = "#3A3064";
-        ctx.strokeStyle = "blue"
-        ctx.fillRect(50, 50, 50, 50);
+        canvas.width = 800;
+        canvas.height = 600;
+
+        let gravity = 5;
+        const pProps = {
+            px: 0,
+            py: 0,
+        }
+
+        let keys = [];
+        let crates = [
+
+        ];
+
+        window.addEventListener("keydown", (event) => {
+            if (!keys.includes(event.keyCode)) {
+                keys.push(event.keyCode)
+            }
+        })
+
+        window.addEventListener("keyup", (event) => {
+            let a = keys.indexOf(event.keyCode)
+            keys.splice(a, 1);
+        });
+
+        class body {
+            constructor(x, y, w, h) {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+            }
+
+            render() {
+                ctx.fillStyle = "orange"
+                ctx.fillRect(this.x, this.y, this.w, this.h);
+            }    
+        }
+
+        for (let i = 0; i < 600; i+= 200) {
+            crates.push(new body(i, 550, 50, 50))
+            console.log(crates);
+        }
+
+        class player {
+            constructor(x, y, w, h) {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+            }
+
+            render() {
+                ctx.fillStyle = "red"
+                ctx.fillRect(this.x,this.y, this.w, this.h);
+            }
+
+            get isColliding() {
+                let cratesX = crates.map((item) => item.x)
+                let cratesY = crates.map((item) => item.y);
+                for (let i = 0; i < crates.length; i++) {
+                    let obj = crates[i];
+
+                    let c2x = cratesX.indexOf(obj.x + obj.w);
+                    let c2y = cratesY.indexOf(obj.y + obj.h);
+                        
+                    if (
+                        this.x < obj.x + obj.w &&
+                        this.x + this.w > obj.x &&
+                        this.y < obj.y + obj.h &&
+                        this.y + this.h > obj.y
+                    ) {
+                        if (c2x === -1) {
+                            if (keys.includes(39) || keys.includes(68)
+                                && this.x + this.w < obj.x + obj.w) {
+                                crates[i].x += 5;     //3 is moving constant
+                            } else if (keys.includes(37) || keys.includes(65)
+                                && this.x + this.w > obj.x + obj.w) {
+                                crates[i].x -= 5;     //3 is moving constant
+                            } else  {
+                            }
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            move() {
+                for (let code in keys) {
+                    if (keys[code] === 32) {
+                        this.y -= 20;
+                    } 
+                    
+                    if (!this.isColliding) {
+                        if (keys[code] === 39 || keys[code] === 68) {
+                            this.x += 5;
+                        } else if (keys[code] == 37 || keys[code] == 65 ) {
+                            this.x -= 5;
+                        }
+                    }
+                }
+            }
+        }
+
+        const storekeeper = new player(0, 350, 50, 100);
+
+
+            
+        
+        function gameLoop() {
+            ctx.clearRect(0, 0, 800, 600);
+
+
+            ctx.fillStyle = "#362D64";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            storekeeper.move();
+            storekeeper.render();
+
+            for (let z = 0; z < crates.length; z += 1) {
+                crates[z].render();
+                                                                
+                if (storekeeper.y + storekeeper.h >= crates[z].y &&
+                    storekeeper.x < crates[z].x + crates[z].w &&
+                    storekeeper.x + storekeeper.w > crates[z].x &&
+                    storekeeper.y < crates[z].y + crates[z].h &&
+                    storekeeper.y + storekeeper.h > crates[z].y
+                ) {
+                    gravity = 0;
+                    
+                } else if (storekeeper.y < 500){
+                    gravity = 5;
+                    storekeeper.y += gravity
+                }
+            }
+
+            window.requestAnimationFrame(gameLoop)
+        }
+        
+        gameLoop();
+        
     </script>
 </body>
 </html>

@@ -79,6 +79,9 @@
             console.log(crates);
         }
 
+        let checkRM = ()  => {return keys.includes(39) || keys.includes(68)};
+        let checkLM = ()  => {return keys.includes(39) || keys.includes(68)};
+
         class player {
             constructor(x, y, w, h) {
                 this.x = x;
@@ -101,26 +104,22 @@
                     let c2xR = cratesX.indexOf(obj.x + obj.w);
                     let c2xL = cratesX.indexOf(obj.x - obj.w);
 
-                    let c2y = cratesY.indexOf(obj.y + obj.h);
+                    let c2yU = cratesY.indexOf(obj.y + obj.h);
+                    let c2yD = cratesY.indexOf(obj.y - obj.h);
                         
                     if (
-                        this.x + 10 < obj.x + obj.w &&
-                        this.x + this.w + 10 > obj.x &&
+                        this.x < obj.x + obj.w &&
+                        this.x + this.w> obj.x &&
                         this.y < obj.y + obj.h &&
                         this.y + this.h > obj.y
                     ) {
                         if (c2xR === -1 && c2xL === -1) {
-                            if ((keys.includes(39) || keys.includes(68))
-                                && this.x + (this.w / 2) < obj.x + (obj.w / 2)) {
+                            if ((checkRM) && this.x + (this.w / 2) < obj.x + (obj.w / 2)) {
                                 crates[i].x += 5; 
-                                return false;    
-                            } else if ((keys.includes(37) || keys.includes(65))
-                                && this.x + (this.w / 2) > obj.x + (obj.w / 2)) {
+                            } else if ((checkLM) && this.x + (this.w / 2) > obj.x + (obj.w / 2)) {
                                 crates[i].x -= 5;     
-                                return false;
-                            } else  {
-                                return false
                             }
+                            return false;
                         } else {
                             return true;
                         }
@@ -132,10 +131,11 @@
 
             move() {
                 for (let code in keys) {
-                    if (keys[code] === 32) {
-                        this.y -= 20;
-                    } 
 
+                    if (keys[code] === 32 && gravity === 0) {
+                        this.y -= 100;
+                    } 
+                    
                     if (!this.isColliding) {
                         if (keys[code] === 39 || keys[code] === 68) {
                             this.x += 5;
@@ -151,7 +151,6 @@
 
 
             
-        
         function gameLoop() {
             ctx.clearRect(0, 0, 800, 600);
 
@@ -163,21 +162,26 @@
             storekeeper.render();
 
             for (let z = 0; z < crates.length; z += 1) {
-                crates[z].render();
+                crates[z].render(); 
                                                                 
-                if (storekeeper.y + storekeeper.h >= crates[z].y &&
+                if (
                     storekeeper.x < crates[z].x + crates[z].w &&
                     storekeeper.x + storekeeper.w > crates[z].x &&
                     storekeeper.y < crates[z].y + crates[z].h &&
-                    storekeeper.y + storekeeper.h > crates[z].y
+                    storekeeper.y + storekeeper.h <= crates[z].y + (crates[z].h / 2)
                 ) {
                     gravity = 0;
-                    
-                } else if (storekeeper.y < 500){
+                    storekeeper.y -= 5
+                } else {
                     gravity = 5;
-                    storekeeper.y += gravity
                 }
+                
             }
+            if (storekeeper.y === 500){
+                gravity = 0;
+            }
+
+            storekeeper.y += gravity
 
             window.requestAnimationFrame(gameLoop)
         }

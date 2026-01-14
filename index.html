@@ -164,8 +164,12 @@
             storekeeper.move();
             storekeeper.render();
 
+
+            crates.forEach((crate) => {
+                crate.render();
+            });
+            
             for (let z = 0; z < crates.length; z += 1) {
-                crates[z].render(); 
                                                                 
                 if (
                     storekeeper.x < crates[z].x + crates[z].w &&
@@ -176,7 +180,7 @@
                 ) {
                     storekeeper.inAir = false;
                     storekeeper.onCrate = true;
-                    break;
+                    break; //By the Principal of Non Super imposition
                 } else {
                     storekeeper.onCrate = false;
                     storekeeper.inAir = true;

@@ -74,7 +74,7 @@
             }    
         }
 
-        for (let i = 0; i < 600; i+= 200) {
+        for (let i = 0; i < 800; i+= 200) {
             crates.push(new body(i, 550, 50, 50))
             console.log(crates);
         }
@@ -88,6 +88,8 @@
                 this.y = y;
                 this.w = w;
                 this.h = h;
+                this.onCrate = false;
+                this.inAir = true;
             }
 
             render() {
@@ -132,8 +134,9 @@
             move() {
                 for (let code in keys) {
 
-                    if (keys[code] === 32 && gravity === 0) {
+                    if (keys[code] === 32 && !storekeeper.inAir) {
                         this.y -= 100;
+                        console.log("Jumped")
                     } 
                     
                     if (!this.isColliding) {
@@ -168,20 +171,25 @@
                     storekeeper.x < crates[z].x + crates[z].w &&
                     storekeeper.x + storekeeper.w > crates[z].x &&
                     storekeeper.y < crates[z].y + crates[z].h &&
+                    storekeeper.y + storekeeper.h >= crates[z].y &&
                     storekeeper.y + storekeeper.h <= crates[z].y + (crates[z].h / 2)
                 ) {
-                    gravity = 0;
-                    storekeeper.y -= 5
+                    storekeeper.inAir = false;
+                    storekeeper.onCrate = true;
+                    break;
                 } else {
-                    gravity = 5;
+                    storekeeper.onCrate = false;
+                    storekeeper.inAir = true;
                 }
                 
             }
-            if (storekeeper.y === 500){
-                gravity = 0;
+            if (!(storekeeper.y === 500 || storekeeper.onCrate)){
+                storekeeper.inAir = true;
+                storekeeper.y += gravity;
+            } else {
+                storekeeper.inAir = false;
             }
 
-            storekeeper.y += gravity
 
             window.requestAnimationFrame(gameLoop)
         }

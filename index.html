@@ -74,13 +74,13 @@
             }    
         }
 
-        for (let i = 0; i < 800; i+= 200) {
+        for (let i = 0; i < 1000; i+= 150) {
             crates.push(new body(i, 550, 50, 50))
             console.log(crates);
         }
 
         let checkRM = ()  => {return keys.includes(39) || keys.includes(68)};
-        let checkLM = ()  => {return keys.includes(39) || keys.includes(68)};
+        let checkLM = ()  => {return keys.includes(37) || keys.includes(65)};
 
         class player {
             constructor(x, y, w, h) {
@@ -100,35 +100,60 @@
             get isColliding() {
                 let cratesX = crates.map((item) => item.x)
                 let cratesY = crates.map((item) => item.y);
+
+                let blocked = false;
+
                 for (let i = 0; i < crates.length; i++) {
                     let obj = crates[i];
 
                     let c2xR = cratesX.indexOf(obj.x + obj.w);
                     let c2xL = cratesX.indexOf(obj.x - obj.w);
 
-                    let c2yU = cratesY.indexOf(obj.y + obj.h);
-                    let c2yD = cratesY.indexOf(obj.y - obj.h);
-                        
                     if (
                         this.x < obj.x + obj.w &&
-                        this.x + this.w> obj.x &&
+                        this.x + this.w >= obj.x &&
                         this.y < obj.y + obj.h &&
-                        this.y + this.h > obj.y
+                        this.y + this.h >= obj.y
                     ) {
+
                         if (c2xR === -1 && c2xL === -1) {
-                            if ((checkRM) && this.x + (this.w / 2) < obj.x + (obj.w / 2)) {
-                                crates[i].x += 5; 
-                            } else if ((checkLM) && this.x + (this.w / 2) > obj.x + (obj.w / 2)) {
-                                crates[i].x -= 5;     
+                            if (
+                                checkRM
+                                && this.x + (this.w / 2) < obj.x + (obj.w / 2)
+                                && this.y + (this. h) > obj.y
+                            ) {
+                                crates[i].x += 5;
+                                console.log("Crate moved to the right")
+                            } else if (
+                                checkLM 
+                                && this.x + (this.w / 2) > obj.x + (obj.w / 2)
+                                && this.y + (this. h) > obj.y
+                            ) {
+                                crates[i].x -= 5;
                             }
-                            return false;
                         } else {
-                            return true;
+                            if (c2xR !== -1 && checkRM) {
+                                blocked = true;
+                                console.log("Disallowing")
+                            } 
+                            
+                            if (c2xR !== -1 && checkLM) {
+                                blocked = false; 
+                            }
+
+                            if (c2xL !== -1 && checkLM) {
+                                blocked = true;
+                            }
+                            
+                            if (c2xL !== -1 && checkRM) {
+                                blocked = false;
+                            }
                         }
                     }
                 }
 
-                return false;
+                return blocked;
+                
             }
 
             move() {
@@ -142,7 +167,7 @@
                     if (!this.isColliding) {
                         if (keys[code] === 39 || keys[code] === 68) {
                             this.x += 5;
-                        } else if (keys[code] == 37 || keys[code] == 65 ) {
+                        } else if (keys[code] == 37 || keys[code] == 65) {
                             this.x -= 5;
                         }
                     }

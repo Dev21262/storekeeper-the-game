@@ -70,6 +70,9 @@
             }
         }
 
+        let cratesX = crates.map((item) => item.x)
+        let cratesY = crates.map((item) => item.y);
+
         class body {
             constructor(x, y, w, h, type) {
                 this.x = x;
@@ -107,7 +110,7 @@
                     break;
 
                     case 4:
-                        ctx.fillStyle = "lime"
+                        ctx.fillStyle = "purple"
                         ctx.strokeStyle = "purple"
                         ctx.lineWidth = 5
                         ctx.fillRect(this.x, this.y, this.w, this.h);
@@ -116,12 +119,11 @@
                     break;
 
                 }
-
             }    
         }
 
         for (let i = 0; i < 1000; i+= 150) {
-            crates.push(new body(i, 550, 50, 50, crateProbability()))
+            crates.push(new body(i, 250, 50, 50, crateProbability()))
             console.log(crates);
         }
 
@@ -144,9 +146,6 @@
             }
 
             get blockedM() {
-                let cratesX = crates.map((item) => item.x)
-                let cratesY = crates.map((item) => item.y);
-
                 let blockedM = "";
 
                 for (let i = 0; i < crates.length; i++) {
@@ -227,20 +226,33 @@
 
         const storekeeper = new player(0, 350, 50, 100);
 
-
+        
             
         function gameLoop() {
             ctx.clearRect(0, 0, 800, 600);
-
-
+            
             ctx.fillStyle = "#362D64";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             storekeeper.move();
             storekeeper.render();
 
+            cratesX = crates.map((item) => item.x)
+            cratesY = crates.map((item) => item.y);
 
-            crates.forEach((crate) => {
+            crates.forEach((crate, index) => {
+                let c2yD = cratesY.indexOf(crate.y + crate.h);
+                let c2yU = cratesY.indexOf(crate.y - crate.h);
+                const mCrates = cratesY.slice(index, 1);
+
+                let cx = mCrates.indexOf(crate.x);
+
+                if (c2yD === -1 && cx === -1) {
+                    if (crate.y < 550) {
+                        crate.y += 10;
+                    }
+                }
+
                 crate.render();
             });
             

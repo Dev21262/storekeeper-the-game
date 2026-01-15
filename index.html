@@ -58,24 +58,70 @@
             keys.splice(a, 1);
         });
 
+        let crateProbability = () => {
+            //90% Chance Yellow Crate
+            //10% Chance Purple Crate
+            let random = 1 + Math.floor(Math.random() * 4);
+
+            if (random === 4) {
+                return 4;
+            } else if (random < 4) {
+                return 1 + Math.floor(Math.random() * 3);
+            }
+        }
+
         class body {
-            constructor(x, y, w, h) {
+            constructor(x, y, w, h, type) {
                 this.x = x;
                 this.y = y;
                 this.w = w;
                 this.h = h;
+                this.type = type;
             }
 
             render() {
-                ctx.fillStyle = "orange"
-                ctx.strokeStyle = "purple"
-                ctx.fillRect(this.x, this.y, this.w, this.h);
-                ctx.stroke();
+                switch (this.type) {
+                    case 1:
+                        ctx.fillStyle = "red"
+                        ctx.strokeStyle = "purple"
+                        ctx.fillRect(this.x, this.y, this.w, this.h);
+                        ctx.stroke();
+                    break;
+
+                    case 2:
+                        ctx.fillStyle = "yellow"
+                        ctx.strokeStyle = "purple"
+                        ctx.lineWidth = 5
+                        ctx.fillRect(this.x, this.y, this.w, this.h);
+                        ctx.strokeRect(this.x, this.y, this.w, this.h);
+                        ctx.stroke();
+                    break;
+
+                    case 3:
+                        ctx.fillStyle = "orange"
+                        ctx.strokeStyle = "purple"
+                        ctx.lineWidth = 5
+                        ctx.fillRect(this.x, this.y, this.w, this.h);
+                        ctx.strokeRect(this.x, this.y, this.w, this.h);
+                        ctx.stroke();
+                    break;
+
+                    case 4:
+                        ctx.fillStyle = "lime"
+                        ctx.strokeStyle = "purple"
+                        ctx.lineWidth = 5
+                        ctx.fillRect(this.x, this.y, this.w, this.h);
+                        ctx.strokeRect(this.x, this.y, this.w, this.h);
+                        ctx.stroke();
+                    break;
+
+                }
+
             }    
         }
 
         for (let i = 0; i < 1000; i+= 150) {
-            crates.push(new body(i, 550, 50, 50))
+            crates.push(new body(i, 550, 50, 50, crateProbability()))
             console.log(crates);
         }
 

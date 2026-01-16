@@ -124,7 +124,6 @@
 
         for (let i = 0; i < 1000; i+= 150) {
             crates.push(new body(i, 250, 50, 50, crateProbability()))
-            console.log(crates);
         }
 
         let checkRM = ()  => {return keys.includes(39) || keys.includes(68)};
@@ -153,6 +152,8 @@
 
                     let c2xR = cratesX.indexOf(obj.x + obj.w);
                     let c2xL = cratesX.indexOf(obj.x - obj.w);
+                    let c2yD = cratesY.indexOf(obj.y + obj.h);
+                    let c2yU = cratesY.indexOf(obj.y - obj.h);
 
                     if (
                         this.x < obj.x + obj.w &&
@@ -165,18 +166,27 @@
                             if (
                                 checkRM
                                 && this.x + (this.w / 2) < obj.x + (obj.w / 2)
-                                && this.y + (this. h) > obj.y
+                                && this.y < obj.y
+                                && this.y + (this. h) > obj.y 
+                                && c2yU === -1
                             ) {
                                 crates[i].x += 5;
-                                console.log("Crate moved to the right")
                             } else if (
                                 checkLM 
                                 && this.x + (this.w / 2) > obj.x + (obj.w / 2)
+                                && this.y < obj.y
                                 && this.y + (this. h) > obj.y
+                                && c2yU === -1 && c2yD === -1
                             ) {
                                 crates[i].x -= 5;
                             }
                         } else if (obj.type === 4) {
+                            if (this.x < obj.x) {
+                                blockedM = "Right"
+                            } else if (this.x > obj.x) {
+                                blockedM = "Left"
+                            }
+                        } else if (c2yU !== -1 && c2yD !== -1) {
                             if (this.x < obj.x) {
                                 blockedM = "Right"
                             } else if (this.x > obj.x) {
@@ -201,7 +211,6 @@
             move() {
                 if (keys.includes(32) && !storekeeper.inAir) {
                     this.y -= 100;
-                    console.log("Jumped")
                 } 
                 
                 if (this.blockedM === "") {
@@ -241,19 +250,29 @@
             cratesY = crates.map((item) => item.y);
 
             crates.forEach((crate, index) => {
-                let c2yD = cratesY.indexOf(crate.y + crate.h);
-                let c2yU = cratesY.indexOf(crate.y - crate.h);
-                const mCrates = cratesY.slice(index, 1);
+crates.forEach(crate => {
+    let supported = false;
 
-                let cx = mCrates.indexOf(crate.x);
+    for (let other of crates) {
+        if (other === crate) continue;
 
-                if (c2yD === -1 && cx === -1) {
-                    if (crate.y < 550) {
-                        crate.y += 10;
-                    }
-                }
+        const touchingY = other.y === crate.y + crate.h;
+        const overlapX =
+            crate.x < other.x + other.w &&
+            crate.x + crate.w > other.x;
 
-                crate.render();
+        if (touchingY && overlapX) {
+            supported = true;
+            break;
+        }
+    }
+
+    if (!supported && crate.y < 550) {
+        crate.y += 1;
+    }
+
+    crate.render();
+});
             });
             
             for (let z = 0; z < crates.length; z += 1) {
@@ -284,6 +303,12 @@
 
             window.requestAnimationFrame(gameLoop)
         }
+
+        window.setTimeout(() => {
+            for (let i = 0; i < 1000; i+= 150) {
+                crates.push(new body(i, 250, 50, 50, crateProbability()))
+            }
+        }, 4000);
         
         gameLoop();
         

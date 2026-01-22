@@ -156,8 +156,8 @@
                             if (
                                 checkRM
                                 && this.x + (this.w / 2) < obj.x
-                                && this.y < obj.y
-                                && this.y + (this. h) >= obj.y + obj.h
+                                && this.y <= obj.y
+                                && this.y + (this. h) >= obj.y
                                 && c2yU === -1
                             ) {
                                 crates[i].x += 5;
@@ -166,22 +166,22 @@
                             if (
                                 checkLM 
                                 && this.x + (this.w / 2) > obj.x
-                                && this.y < obj.y
-                                && this.y + (this. h) >= obj.y + obj.h
+                                && this.y <= obj.y
+                                && this.y + (this. h) >= obj.y
                                 && c2yU === -1 
                             ) {
                                 crates[i].x -= 5;
                             }
                         } else if (obj.type === 4) {
-                            if (this.x < obj.x) {
+                            if (this.x <= obj.x) {
                                 blockedM = "Right"
-                            } else if (this.x > obj.x) {
+                            } else if (this.x >= obj.x) {
                                 blockedM = "Left"
                             }
                         } else if (c2yU !== -1 && c2yD !== -1) {
-                            if (this.x < obj.x) {
+                            if (this.x <= obj.x) {
                                 blockedM = "Right"
-                            } else if (this.x > obj.x) {
+                            } else if (this.x >= obj.x) {
                                 blockedM = "Left"
                             }
                         }
@@ -202,7 +202,7 @@
 
             move() {
                 if (keys.includes(32) && !storekeeper.inAir) {
-                    this.y -= 100;
+                    this.y -= 200;
                 } 
                 
                 if (this.blockedM === "") {
@@ -244,31 +244,35 @@
             cratesY = crates.map((item) => item.y);
 
             crates.forEach(crate => {
-                let supported = false;
+
+                let isSupported = false;
 
                 for (let other of crates) {
-                    if (other === crate) continue;
 
-                    const touchingY = other.y === crate.y + crate.h;
-                    const overlapX =
-                        crate.x < other.x + other.w &&
-                        crate.x + crate.w > other.x;
+                    if (other !== crate) {
 
-                    if (touchingY && overlapX) {
-                        supported = true;
-                        break;
+                        const directlyUnder =
+                            other.y === crate.y + crate.h;
+
+                        const overlapX =
+                            crate.x < other.x + other.w &&
+                            crate.x + crate.w > other.x;
+
+                        if (directlyUnder && overlapX) {
+                            isSupported = true;
+                            break;
+                        }
                     }
                 }
 
-                if (!supported && crate.y < 550) {
-                    crate.y += 1;
+                if (!isSupported && crate.y < 550) {
+                    crate.y += gravity;
                 }
 
                 crate.render();
             });
             
             for (let z = 0; z < crates.length; z += 1) {
-                                                                
                 if (
                     storekeeper.x < crates[z].x + crates[z].w &&
                     storekeeper.x + storekeeper.w > crates[z].x &&
@@ -276,12 +280,10 @@
                     storekeeper.y + storekeeper.h >= crates[z].y &&
                     storekeeper.y + storekeeper.h <= crates[z].y + (crates[z].h / 2)
                 ) {
-                    storekeeper.inAir = false;
                     storekeeper.onCrate = true;
                     break; //By the Principal of Non Super imposition
                 } else {
                     storekeeper.onCrate = false;
-                    storekeeper.inAir = true;
                 }
                 
             }

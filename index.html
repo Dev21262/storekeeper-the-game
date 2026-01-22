@@ -86,36 +86,22 @@
                 switch (this.type) {
                     case 1:
                         ctx.fillStyle = "red"
-                        ctx.strokeStyle = "purple"
                         ctx.fillRect(this.x, this.y, this.w, this.h);
-                        ctx.stroke();
                     break;
 
                     case 2:
                         ctx.fillStyle = "yellow"
-                        ctx.strokeStyle = "purple"
-                        ctx.lineWidth = 5
                         ctx.fillRect(this.x, this.y, this.w, this.h);
-                        ctx.strokeRect(this.x, this.y, this.w, this.h);
-                        ctx.stroke();
                     break;
 
                     case 3:
                         ctx.fillStyle = "orange"
-                        ctx.strokeStyle = "purple"
-                        ctx.lineWidth = 5
                         ctx.fillRect(this.x, this.y, this.w, this.h);
-                        ctx.strokeRect(this.x, this.y, this.w, this.h);
-                        ctx.stroke();
                     break;
 
                     case 4:
                         ctx.fillStyle = "purple"
-                        ctx.strokeStyle = "purple"
-                        ctx.lineWidth = 5
                         ctx.fillRect(this.x, this.y, this.w, this.h);
-                        ctx.strokeRect(this.x, this.y, this.w, this.h);
-                        ctx.stroke();
                     break;
 
                 }
@@ -135,8 +121,9 @@
                 this.y = y;
                 this.w = w;
                 this.h = h;
-                this.onCrate = false;
+
                 this.inAir = true;
+                this.onCrate = false;
             }
 
             render() {
@@ -144,39 +131,44 @@
                 ctx.fillRect(this.x,this.y, this.w, this.h);
             }
 
+            collision(o) {
+                    return (
+                        this.x <= o.x + o.w &&
+                        this.x + this.w >= o.x &&
+                        this.y < o.y + o.h &&
+                        this.y + this.h > o.y
+                    )
+            }
+
             get blockedM() {
                 let blockedM = "";
 
                 for (let i = 0; i < crates.length; i++) {
                     let obj = crates[i];
-
-                    let c2xR = cratesX.indexOf(obj.x + obj.w);
+                    
+                    let c2xR = cratesX.indexOf(obj.x + obj.w); //Check If a crate is directly right to the current crate
                     let c2xL = cratesX.indexOf(obj.x - obj.w);
                     let c2yD = cratesY.indexOf(obj.y + obj.h);
                     let c2yU = cratesY.indexOf(obj.y - obj.h);
 
-                    if (
-                        this.x < obj.x + obj.w &&
-                        this.x + this.w >= obj.x &&
-                        this.y < obj.y + obj.h &&
-                        this.y + this.h > obj.y
-                    ) {
-
+                    if (this.collision(obj)) {
                         if (c2xR === -1 && c2xL === -1 && obj.type !== 4) {
                             if (
                                 checkRM
-                                && this.x + (this.w / 2) < obj.x + (obj.w / 2)
+                                && this.x + (this.w / 2) < obj.x
                                 && this.y < obj.y
-                                && this.y + (this. h) > obj.y 
+                                && this.y + (this. h) >= obj.y + obj.h
                                 && c2yU === -1
                             ) {
                                 crates[i].x += 5;
-                            } else if (
+                            } 
+                            
+                            if (
                                 checkLM 
-                                && this.x + (this.w / 2) > obj.x + (obj.w / 2)
+                                && this.x + (this.w / 2) > obj.x
                                 && this.y < obj.y
-                                && this.y + (this. h) > obj.y
-                                && c2yU === -1 && c2yD === -1
+                                && this.y + (this. h) >= obj.y + obj.h
+                                && c2yU === -1 
                             ) {
                                 crates[i].x -= 5;
                             }
@@ -216,7 +208,9 @@
                 if (this.blockedM === "") {
                     if (keys.includes(39) || keys.includes(68)) {
                         this.x += 5;
-                    } else if (keys.includes(37) || keys.includes(65)) {
+                    } 
+                    
+                    if (keys.includes(37) || keys.includes(65)) {
                         this.x -= 5;
                     }
                 } else if (this.blockedM === "Right") {
@@ -249,30 +243,28 @@
             cratesX = crates.map((item) => item.x)
             cratesY = crates.map((item) => item.y);
 
-            crates.forEach((crate, index) => {
-crates.forEach(crate => {
-    let supported = false;
+            crates.forEach(crate => {
+                let supported = false;
 
-    for (let other of crates) {
-        if (other === crate) continue;
+                for (let other of crates) {
+                    if (other === crate) continue;
 
-        const touchingY = other.y === crate.y + crate.h;
-        const overlapX =
-            crate.x < other.x + other.w &&
-            crate.x + crate.w > other.x;
+                    const touchingY = other.y === crate.y + crate.h;
+                    const overlapX =
+                        crate.x < other.x + other.w &&
+                        crate.x + crate.w > other.x;
 
-        if (touchingY && overlapX) {
-            supported = true;
-            break;
-        }
-    }
+                    if (touchingY && overlapX) {
+                        supported = true;
+                        break;
+                    }
+                }
 
-    if (!supported && crate.y < 550) {
-        crate.y += 1;
-    }
+                if (!supported && crate.y < 550) {
+                    crate.y += 1;
+                }
 
-    crate.render();
-});
+                crate.render();
             });
             
             for (let z = 0; z < crates.length; z += 1) {
@@ -304,11 +296,11 @@ crates.forEach(crate => {
             window.requestAnimationFrame(gameLoop)
         }
 
-        window.setTimeout(() => {
-            for (let i = 0; i < 1000; i+= 150) {
-                crates.push(new body(i, 250, 50, 50, crateProbability()))
-            }
-        }, 4000);
+        // window.setTimeout(() => {
+        //     for (let i = 0; i < 1000; i+= 150) {
+        //         crates.push(new body(i, 250, 50, 50, crateProbability()))
+        //     }
+        // }, 4000);
         
         gameLoop();
         

@@ -177,17 +177,26 @@
                         if (!cRight && !cLeft && obj.type !== 4) {
                             if (
                                 checkRM
-                                && this.x + (this.w / 2) < obj.x
+                                && this.x + (this.w / 2) <= obj.x
                                 && this.y <= obj.y
                                 && this.y + (this. h) === obj.y + obj.h
                                 && !cAbove
                             ) {
                                 crates[i].x += 5;
-                            } 
+                            }  else if (checkRM 
+                                && this.y <= obj.y
+                                && this.y + this.h !== obj.y + obj.h) 
+                            {
+                                if (this.x <= obj.x) {
+                                    blockedM = "Right"
+                                } else if (this.x >= obj.x) {
+                                    blockedM = "Left"
+                                }
+                            }
                             
                             if (
                                 checkLM 
-                                && this.x + (this.w / 2) > obj.x
+                                && this.x + (this.w / 2) >= obj.x
                                 && this.y <= obj.y
                                 && this.y + (this. h) === obj.y + obj.h
                                 && !cAbove
@@ -203,13 +212,13 @@
                                 }
                             }
 
-                            if (cDown) {
-                                if (this.x <= obj.x) {
-                                    blockedM = "Right"
-                                } else if (this.x >= obj.x) {
-                                    blockedM = "Left"
-                                }
-                            }
+                            // if (cDown) {
+                            //     if (this.x <= obj.x) {
+                            //         blockedM = "Right"
+                            //     } else if (this.x >= obj.x) {
+                            //         blockedM = "Left"
+                            //     }
+                            // }
                         } else if (obj.type === 4 || (!cAbove && !cDown)) {
                             if (this.x <= obj.x) {
                                 blockedM = "Right"
@@ -330,7 +339,7 @@
             window.requestAnimationFrame(gameLoop)
         }
 
-        window.setInterval(() => {
+        window.setTimeout(() => {
             for (let i = 0; i < 1000; i+= 200) {
                 crates.push(new body(i, 250, 50, 50, crateProbability()))
             }

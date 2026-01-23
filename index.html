@@ -113,6 +113,7 @@
         }
 
         let checkRM = ()  => {return keys.includes(39) || keys.includes(68)};
+        let checkUM = ()  => {return keys.includes(32)};
         let checkLM = ()  => {return keys.includes(37) || keys.includes(65)};
 
         class player {
@@ -140,13 +141,20 @@
                 )
             }
 
+            obstruct(o) {
+                if (this.x <= o.x) {
+                    return "Right"
+                } else if (this.x >= o.x) {
+                    return "Left"
+                }
+            }
+
             get blockedM() {
                 let blockedM = "";
 
                 for (let i = 0; i < crates.length; i++) {
                     let obj = crates[i];
                     
-
                     //We Know the exact index of block that is left or right to current block
                     //But checking just which block is to 
                     
@@ -187,11 +195,7 @@
                                 && this.y <= obj.y
                                 && this.y + this.h !== obj.y + obj.h) 
                             {
-                                if (this.x <= obj.x) {
-                                    blockedM = "Right"
-                                } else if (this.x >= obj.x) {
-                                    blockedM = "Left"
-                                }
+                                blockedM = this.obstruct(obj);
                             }
                             
                             if (
@@ -202,29 +206,18 @@
                                 && !cAbove
                             ) {
                                 crates[i].x -= 5;
+                            }  else if (checkLM 
+                                && this.y <= obj.y
+                                && this.y + this.h !== obj.y + obj.h) 
+                            {
+                                blockedM = this.obstruct(obj);
                             }
 
                             if (cAbove) {
-                                if (this.x <= obj.x) {
-                                    blockedM = "Right"
-                                } else if (this.x >= obj.x) {
-                                    blockedM = "Left"
-                                }
+                                blockedM = this.obstruct(obj);
                             }
-
-                            // if (cDown) {
-                            //     if (this.x <= obj.x) {
-                            //         blockedM = "Right"
-                            //     } else if (this.x >= obj.x) {
-                            //         blockedM = "Left"
-                            //     }
-                            // }
                         } else if (obj.type === 4 || (!cAbove && !cDown)) {
-                            if (this.x <= obj.x) {
-                                blockedM = "Right"
-                            } else if (this.x >= obj.x) {
-                                blockedM = "Left"
-                            }
+                            blockedM = this.obstruct(obj);
                         }
 
                         if (cRight && checkRM) {
@@ -235,7 +228,14 @@
                             blockedM = 'Left';
                         }
                     }
+
+                    if (checkUM && this.y - 200 <= obj.y + obj.h && this.x + this.w >= obj.x && this.x <= obj.x + obj.w) {
+                        blockedM = "UP"
+                    }
+           
                 }
+
+
 
                 return blockedM;
                 
@@ -243,10 +243,13 @@
 
             move() {
                 if (keys.includes(32) && !storekeeper.inAir) {
-                    this.y -= 200;
+                    if (this.blockedM !== "UP") {
+                        this.y -= 200;
+                    } else {
+                    }
                 } 
                 
-                if (this.blockedM === "") {
+                if (this.blockedM === "" || this.blockedM === "UP") {
                     if (keys.includes(39) || keys.includes(68)) {
                         this.x += 5;
                     } 
@@ -307,7 +310,7 @@
                 }
 
                 if (!isSupported && crate.y < 550) {
-                    crate.y += gravity;
+                    crate.y += 1;
                 }
 
                 crate.render();

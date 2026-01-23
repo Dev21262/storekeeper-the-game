@@ -108,7 +108,7 @@
             }    
         }
 
-        for (let i = 0; i < 1000; i+= 150) {
+        for (let i = 0; i < 1000; i+= 200) {
             crates.push(new body(i, 250, 50, 50, crateProbability()))
         }
 
@@ -132,12 +132,12 @@
             }
 
             collision(o) {
-                    return (
-                        this.x <= o.x + o.w &&
-                        this.x + this.w >= o.x &&
-                        this.y < o.y + o.h &&
-                        this.y + this.h > o.y
-                    )
+                return (
+                    this.x <= o.x + o.w &&
+                    this.x + this.w >= o.x &&
+                    this.y < o.y + o.h &&
+                    this.y + this.h > o.y
+                )
             }
 
             get blockedM() {
@@ -146,11 +146,7 @@
                 for (let i = 0; i < crates.length; i++) {
                     let obj = crates[i];
                     
-                    // let c2xR = cratesX.indexOf(obj.x + obj.w); 
-                    // let c2xL = cratesX.indexOf(obj.x - obj.w);
-                    // let c2yD = cratesY.indexOf(obj.y + obj.h);
-                    // let c2yU = cratesY.indexOf(obj.y - obj.h);
-                    
+
                     //We Know the exact index of block that is left or right to current block
                     //But checking just which block is to 
                     
@@ -178,12 +174,12 @@
 
 
                     if (this.collision(obj)) {
-                        if (c2xR === -1 && c2xL === -1 && obj.type !== 4) {
+                        if (!cRight && !cLeft && obj.type !== 4) {
                             if (
                                 checkRM
                                 && this.x + (this.w / 2) < obj.x
                                 && this.y <= obj.y
-                                && this.y + (this. h) >= obj.y
+                                && this.y + (this. h) === obj.y + obj.h
                                 && !cAbove
                             ) {
                                 crates[i].x += 5;
@@ -193,18 +189,28 @@
                                 checkLM 
                                 && this.x + (this.w / 2) > obj.x
                                 && this.y <= obj.y
-                                && this.y + (this. h) >= obj.y
+                                && this.y + (this. h) === obj.y + obj.h
                                 && !cAbove
                             ) {
                                 crates[i].x -= 5;
                             }
-                        } else if (obj.type === 4) {
-                            if (this.x <= obj.x) {
-                                blockedM = "Right"
-                            } else if (this.x >= obj.x) {
-                                blockedM = "Left"
+
+                            if (cAbove) {
+                                if (this.x <= obj.x) {
+                                    blockedM = "Right"
+                                } else if (this.x >= obj.x) {
+                                    blockedM = "Left"
+                                }
                             }
-                        } else if (!cAbove && !cDown) {
+
+                            if (cDown) {
+                                if (this.x <= obj.x) {
+                                    blockedM = "Right"
+                                } else if (this.x >= obj.x) {
+                                    blockedM = "Left"
+                                }
+                            }
+                        } else if (obj.type === 4 || (!cAbove && !cDown)) {
                             if (this.x <= obj.x) {
                                 blockedM = "Right"
                             } else if (this.x >= obj.x) {
@@ -324,11 +330,11 @@
             window.requestAnimationFrame(gameLoop)
         }
 
-        // window.setTimeout(() => {
-        //     for (let i = 0; i < 1000; i+= 150) {
-        //         crates.push(new body(i, 250, 50, 50, crateProbability()))
-        //     }
-        // }, 4000);
+        window.setInterval(() => {
+            for (let i = 0; i < 1000; i+= 200) {
+                crates.push(new body(i, 250, 50, 50, crateProbability()))
+            }
+        }, 4000);
         
         gameLoop();
         

@@ -59,15 +59,11 @@
         });
 
         let crateProbability = () => {
-            //90% Chance Yellow Crate
-            //10% Chance Purple Crate
+            // 25% Each
             let random = 1 + Math.floor(Math.random() * 4);
 
-            if (random === 4) {
-                return 4;
-            } else if (random < 4) {
-                return 1 + Math.floor(Math.random() * 3);
-            }
+            //
+            return  random === 4 ? 1 + Math.floor(Math.random() * 4) : 1 + Math.floor(Math.random() * 3);
         }
 
         let cratesX = crates.map((item) => item.x)

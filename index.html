@@ -37,25 +37,25 @@
         canvas.height = 600;
 
         let gravity = 5;
-        const pProps = {
-            px: 0,
-            py: 0,
-        }
 
         let keys = [];
         let crates = [
 
         ];
 
+        // window.addEventListener("keydown", (event) => {
+         //   if (!keys.includes(event.keyCode)) {
+         //       keys.push(event.keyCode)
+        //    }
+        //})
+
         window.addEventListener("keydown", (event) => {
-            if (!keys.includes(event.keyCode)) {
-                keys.push(event.keyCode)
-            }
+            keys[event.keyCode] = true;
         })
+        
 
         window.addEventListener("keyup", (event) => {
-            let a = keys.indexOf(event.keyCode)
-            keys.splice(a, 1);
+            keys[event.keyCode] = false;
         });
 
         let crateProbability = () => {
@@ -112,9 +112,9 @@
             crates.push(new body(i, 250, 50, 50, crateProbability()))
         }
 
-        let checkRM = ()  => {return keys.includes(39) || keys.includes(68)};
-        let checkUM = ()  => {return keys.includes(32)};
-        let checkLM = ()  => {return keys.includes(37) || keys.includes(65)};
+        let checkRM = ()  => {return keys[39] || keys[68]};
+        let checkUM = ()  => {return keys[32]};
+        let checkLM = ()  => {return keys[37] || keys[65]};
 
         class player {
             constructor(x, y, w, h) {
@@ -125,10 +125,11 @@
 
                 this.inAir = true;
                 this.onCrate = false;
+                this.flightPeriod = 0;
             }
 
             render() {
-                ctx.fillStyle = "red"
+                ctx.fillStyle = "white"
                 ctx.fillRect(this.x,this.y, this.w, this.h);
             }
 
@@ -150,20 +151,27 @@
             }
 
             get blockedM() {
-                let blockedM = "";
+                let blockedM = [];
+                this.flightPeriod += 1; 
+                
+                if (this.inAir) {
+                    blockedM = [];
+                    blockedM.push(["Right", "Left"]);
+                    if (this.flightPeriod >= 120) {
+                        blockedM = [];
+                    }
+                }
 
                 for (let i = 0; i < crates.length; i++) {
                     let obj = crates[i];
-                    
-                    //We Know the exact index of block that is left or right to current block
-                    //But checking just which block is to 
-                    
-                    let cAbove; 
-                    let cDown;
-                    let cRight;
-                    let cLeft;
+
+                    let cAbove = false; 
+                    let cDown = false;
+                    let cRight = false;
+                    let cLeft = false;
+
                     crates.forEach((cr) => {
-                        if (cr.x + cr.w >= obj.x && cr.x  <= obj.x + obj.w){
+                        if (cr.x + cr.w >= obj.x && cr.x <= obj.x + obj.w) {
                             if (cr.y === (obj.y - obj.h)) {
                                 cAbove = true;
                             } else if (cr.y === (obj.y + obj.h)) {
@@ -173,103 +181,130 @@
 
                         if (cr.y === obj.y) {
                             if (cr.x === obj.x + obj.w) {
-                                cRight  = true;
+                                cRight = true;
                             } else if (cr.x === obj.x - obj.w) {
                                 cLeft = true;
                             }
                         }
-                    })
+                    });
 
 
                     if (this.collision(obj)) {
                         if (!cRight && !cLeft && obj.type !== 4) {
+
                             if (
-                                checkRM
-                                && this.x + (this.w / 2) <= obj.x
-                                && this.y <= obj.y
-                                && this.y + (this. h) === obj.y + obj.h
-                                && !cAbove
+                                checkRM() &&
+                                this.x + (this.w / 2) <= obj.x &&
+                                this.y <= obj.y &&
+                                this.y + this.h === obj.y + obj.h &&
+                                !cAbove
                             ) {
                                 crates[i].x += 5;
-                            }  else if (checkRM 
-                                && this.y <= obj.y
-                                && this.y + this.h !== obj.y + obj.h) 
-                            {
-                                blockedM = this.obstruct(obj);
+                            } else if (
+                                checkRM() &&
+                                this.y <= obj.y &&
+                                this.y + this.h !== obj.y + obj.h
+                            ) {
+                                if (!blockedM.includes(this.obstruct(obj))) {
+                                    blockedM.push(this.obstruct(obj));
+                                }
                             }
-                            
+
                             if (
-                                checkLM 
-                                && this.x + (this.w / 2) >= obj.x
-                                && this.y <= obj.y
-                                && this.y + (this. h) === obj.y + obj.h
-                                && !cAbove
+                                checkLM() &&
+                                this.x + (this.w / 2) >= obj.x &&
+                                this.y <= obj.y &&
+                                this.y + this.h === obj.y + obj.h &&
+                                !cAbove
                             ) {
                                 crates[i].x -= 5;
-                            }  else if (checkLM 
-                                && this.y <= obj.y
-                                && this.y + this.h !== obj.y + obj.h) 
-                            {
-                                blockedM = this.obstruct(obj);
+                            } else if (
+                                checkLM() &&
+                                this.y <= obj.y &&
+                                this.y + this.h !== obj.y + obj.h
+                            ) {
+                                let dir = this.obstruct(obj);
+                                if (!blockedM.includes(dir)) {
+                                    blockedM.push(dir);
+                                }
                             }
 
                             if (cAbove) {
-                                blockedM = this.obstruct(obj);
+                                let dir = this.obstruct(obj);
+                                if (!blockedM.includes(dir)) {
+                                    blockedM.push(dir);
+                                }
                             }
+
                         } else if (obj.type === 4 || (!cAbove && !cDown)) {
-                            blockedM = this.obstruct(obj);
+                            let dir = this.obstruct(obj);
+                            if (!blockedM.includes(dir)) {
+                                blockedM.push(dir);
+                            }
                         }
 
-                        if (cRight && checkRM) {
-                            blockedM = 'Right';
-                        } 
+                        if (cRight && checkRM()) {
+                            if (!blockedM.includes("Right")) {
+                                blockedM.push("Right");
+                            }
+                        }
 
-                        if (cLeft && checkLM) {
-                            blockedM = 'Left';
+                        if (cLeft && checkLM()) {
+                            if (!blockedM.includes("Left")) {
+                                blockedM.push("Left");
+                            }
                         }
                     }
 
-                    if (checkUM && this.y - 200 <= obj.y + obj.h && this.x + this.w >= obj.x && this.x <= obj.x + obj.w) {
-                        blockedM = "UP"
+                    if (
+                        checkUM() &&
+                        this.y - 200 <= obj.y + obj.h &&
+                        this.y + this.h  > obj.y + obj.h &&
+                        this.x + this.w > obj.x &&
+                        this.x < obj.x + obj.w
+                    ) {
+                        blockedM.push("UP")
                     }
-           
                 }
 
-
-
                 return blockedM;
-                
             }
 
-            move() {
-                if (keys.includes(32) && !storekeeper.inAir) {
-                    if (this.blockedM !== "UP") {
-                        this.y -= 200;
-                    } else {
-                    }
-                } 
-                
-                if (this.blockedM === "" || this.blockedM === "UP") {
-                    if (keys.includes(39) || keys.includes(68)) {
-                        this.x += 5;
-                    } 
-                    
-                    if (keys.includes(37) || keys.includes(65)) {
-                        this.x -= 5;
-                    }
-                } else if (this.blockedM === "Right") {
-                    if (keys.includes(37) || keys.includes(65)) {
-                        this.x -= 5;
-                    }
-                } else if (this.blockedM === "Left") {
-                    if (keys.includes(39) || keys.includes(68)) {
-                        this.x += 5;
-                    }
-                } else if (this.blockedM === "ALL") {
+        move() {
+            const blocked = this.blockedM;
 
+            if (checkUM() && !this.inAir && !blocked.includes("UP")) {
+                this.y -= 200;
+            }
+
+            if (!(blocked.includes("Right") && blocked.includes("Left"))) {
+
+                if (blocked.length === 0 || (blocked.length === 1 && blocked.includes("UP"))) {
+                        
+                    if (checkRM()) {
+                        this.x += 5;
+                    }
+                    
+                    if (checkLM()) {
+                        this.x -= 5;
+                    }
+                    
+                } else if (blocked.includes("Right") ) {
+
+                    if (checkLM()) {
+                        this.x -= 5;
+                    }
+                    
+                } else if (blocked.includes("Left")) {
+                    if (checkRM()) {
+                        this.x += 5;
+                    }
                 }
             }
         }
+
+    }
+
 
         const storekeeper = new player(0, 350, 50, 100);
 
@@ -310,7 +345,7 @@
                 }
 
                 if (!isSupported && crate.y < 550) {
-                    crate.y += 1;
+                    crate.y += gravity;
                 }
 
                 crate.render();
@@ -342,11 +377,11 @@
             window.requestAnimationFrame(gameLoop)
         }
 
-        window.setTimeout(() => {
-            for (let i = 0; i < 1000; i+= 200) {
-                crates.push(new body(i, 250, 50, 50, crateProbability()))
+        window.setInterval(() => {
+            for (let i = 0; i < 800; i+= 300) {
+                crates.push(new body(i, 10, 50, 50, crateProbability()))
             }
-        }, 4000);
+        }, 8000);
         
         gameLoop();
         
